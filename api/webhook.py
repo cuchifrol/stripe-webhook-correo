@@ -62,7 +62,7 @@ def enviar_correo_confirmacion(destinatario, monto, moneda, nombre_cliente, dire
     asunto = f"Tu pedido en micosmeticanatural.com ha sido confirmado."
     msg = EmailMessage()
     msg['Subject'] = asunto
-    nombre_a_mostrar = "María Mayorca"  # <-- CAMBIA ESTO POR TU NOMBRE O EL DE TU NEGOCIO
+    nombre_a_mostrar = os.environ.get('NOMBRE_CORREO')  # <-- CAMBIA ESTO POR TU NOMBRE O EL DE TU NEGOCIO
     msg['From'] = f"{nombre_a_mostrar} <{remitente}>"
     msg['To'] = destinatario
     msg.set_content(
@@ -128,7 +128,7 @@ def stripe_webhook():
             # Llamamos a nuestra función de envío de correo
             # (Hay que definirla fuera o dentro de esta función)
             enviar_correo_confirmacion(email_cliente, monto, moneda, nombre_cliente, direccion_envio, nombre_producto)
-            enviar_correo_confirmacion('info@micosmeticanatural.com', monto, moneda, nombre_cliente, direccion_envio, nombre_producto)
+            enviar_correo_confirmacion(os.environ.get('CORREO_USER'), monto, moneda, nombre_cliente, direccion_envio, nombre_producto)
         except Exception as e:
             print(f"-> ERROR al procesar la sesión de checkout: {e}")
             return Response(status=500)
