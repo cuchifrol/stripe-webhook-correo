@@ -134,8 +134,3 @@ def stripe_webhook():
 
     return Response(status=200)
 
-
-# Este es el punto de entrada que Vercel usará con Flask
-# No es estrictamente necesario, pero es una buena práctica
-def handler(request):
-    return app(request.environ, lambda start_response: start_response)
