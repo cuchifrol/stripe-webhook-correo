@@ -42,7 +42,11 @@ class handler(BaseHTTPRequestHandler):
                         nombre_cliente = cargo_completo.billing_details.name
                         direccion_envio = cargo_completo.shipping
 
-                        self.enviar_correo_confirmacion(email_cliente, monto, moneda, nombre_cliente, direccion_envio)
+                        nombre_producto = cargo_completo.description or datos_pago.get('description') or "Tu Compra"
+                        print(f"-> Nombre del producto encontrado: {nombre_producto}")
+
+                        self.enviar_correo_confirmacion(email_cliente, monto, moneda, nombre_cliente, direccion_envio,
+                                                        nombre_producto)
 
 
                     else:
@@ -58,7 +62,7 @@ class handler(BaseHTTPRequestHandler):
         self.wfile.write(b"Webhook procesado.")
         return
 
-    def enviar_correo_confirmacion(self, destinatario, monto, moneda, nombre_cliente, direccion_envio):
+    def enviar_correo_confirmacion(self, destinatario, monto, moneda, nombre_cliente, direccion_envio, nombre_producto):
         print("-> Iniciando envío de correo con plantilla HTML...")
 
         remitente = os.environ.get('CORREO_USER')
@@ -92,7 +96,7 @@ class handler(BaseHTTPRequestHandler):
 
         # --- El resto del código para reemplazar variables y enviar es el mismo ---
         monto_formateado = f"{monto:.2f} {moneda}"
-        nombre_formateado = nombre_cliente.title() if nombre_cliente else "Valioso Cliente"
+        nombre_formateado = nombre_cliente.title() if nombre_cliente else " "
 
         if direccion_envio and direccion_envio.address:
             addr = direccion_envio.address
@@ -103,8 +107,9 @@ class handler(BaseHTTPRequestHandler):
         cuerpo_html = cuerpo_html.replace('{{NOMBRE_CLIENTE}}', nombre_formateado)
         cuerpo_html = cuerpo_html.replace('{{MONTO_PAGO}}', monto_formateado)
         cuerpo_html = cuerpo_html.replace('{{DIRECCION_ENTREGA}}', direccion_formateada)
+        cuerpo_html = cuerpo_html.replace('{{NOMBRE_PRODUCTO}}', nombre_producto) # <-- ¡AÑADE ESTA LÍNEA!
 
-        asunto = f"Tu pedido en Mi Tienda ha sido confirmado ({monto_formateado})"
+        asunto = f"Tu pedido en micosmeticanatural.com se ha sido confirmado ({monto_formateado})"
         msg = EmailMessage()
         msg['Subject'] = asunto
         msg['From'] = remitente

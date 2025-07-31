@@ -20,7 +20,7 @@
             overflow: hidden;
         }
         .header {
-            background-color: #5433FF; /* Un color morado como el de Stripe */
+            background-color: #000000; /* Un color morado como el de Stripe */
             color: #ffffff;
             padding: 20px;
             text-align: center;
@@ -37,20 +37,20 @@
             margin: 0 0 15px 0;
         }
         .details {
-            background-color: #f9f9f9;
+            background-color: #ffffff;
             padding: 20px;
-            border-top: 1px solid #e0e0e0;
+            border-top: 1px solid #ad9d95;
             border-bottom: 1px solid #e0e0e0;
         }
         .details h3 {
             margin-top: 0;
-            color: #5433FF;
+            color: #ad9d95;
         }
         .footer {
             padding: 20px;
             text-align: center;
             font-size: 12px;
-            color: #777;
+            color: #ad9d95;
         }
     </style>
 </head>
@@ -61,20 +61,21 @@
         </div>
         <div class="content">
             <p>Hola <strong>{{NOMBRE_CLIENTE}}</strong>,</p>
-            <p>Te confirmamos que hemos recibido tu pago correctamente. A continuación, te dejamos los detalles de tu pedido.</p>
+            <p>Te confirmamos que hemos recibido tu pago correctamente. A continuación, te dejo los detalles de tu pedido.</p>
         </div>
         <div class="details">
             <h3>Resumen del Pedido</h3>
+            <p><strong>Producto:</strong> {{NOMBRE_PRODUCTO}}</p>
             <p><strong>Importe total:</strong> {{MONTO_PAGO}}</p>
             <p><strong>Dirección de entrega:</strong><br>{{DIRECCION_ENTREGA}}</p>
         </div>
         <div class="content">
             <p>Si tienes cualquier pregunta sobre tu pedido, no dudes en responder a este correo.</p>
             <p>¡Gracias de nuevo por tu confianza!</p>
-            <p>El equipo de Mi Tienda</p>
+            <p>María Mayorca</p>
         </div>
         <div class="footer">
-            <p>© 2025 Mi Tienda. Todos los derechos reservados.</p>
+            <p>www.micosmeticanatural.com.</p>
         </div>
     </div>
 </body>
