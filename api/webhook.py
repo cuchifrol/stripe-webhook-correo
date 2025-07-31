@@ -26,36 +26,42 @@ class handler(BaseHTTPRequestHandler):
         if evento_stripe.get('type') == 'payment_intent.succeeded':
             print("-> Evento 'payment_intent.succeeded' detectado. Procediendo a enviar correo.")
 
-            try:
-                # --- NUEVO CÓDIGO DETECTIVE PARA ENCONTRAR EL EMAIL ---
-                email_cliente = None
-                datos_pago = evento_stripe['data']['object']
+            # --- NUEVO CÓDIGO DETECTIVE (REEMPLAZO) ---
+        try:
+            email_cliente = None
+            datos_pago = evento_stripe['data']['object']
 
-                # Intento 1: ¿Está en el campo de recibo explícito?
-                if datos_pago.get('receipt_email'):
-                    email_cliente = datos_pago['receipt_email']
-                    print("-> Correo encontrado en 'receipt_email'.")
+            # Intento 1: ¿Está en el campo de recibo explícito? (El que falló antes)
+            if datos_pago.get('receipt_email'):
+                email_cliente = datos_pago['receipt_email']
+                print("-> Búsqueda 1: Correo encontrado en 'receipt_email'.")
 
-                # Intento 2 (El más fiable): ¿Está en los detalles de facturación del cargo?
-                elif datos_pago.get('charges') and datos_pago['charges']['data']:
-                    detalles_facturacion = datos_pago['charges']['data'][0]['billing_details']
+            # Intento 2 (El más fiable): ¿Está en los detalles de facturación del cargo?
+            elif datos_pago.get('charges') and datos_pago['charges'].get('data'):
+                # Obtenemos la lista de cargos (normalmente solo hay uno)
+                cargos = datos_pago['charges']['data']
+                if cargos:
+                    detalles_facturacion = cargos[0].get('billing_details')
                     if detalles_facturacion and detalles_facturacion.get('email'):
                         email_cliente = detalles_facturacion['email']
-                        print("-> Correo encontrado en 'billing_details'.")
+                        print("-> Búsqueda 2: Correo encontrado en 'billing_details' del cargo.")
 
-                # Si después de buscar, hemos encontrado un email...
-                if email_cliente:
-                    print(f"-> Correo final para el envío: {email_cliente}")
-                    # Extraemos monto y moneda
-                    monto = datos_pago['amount'] / 100
-                    moneda = datos_pago['currency'].upper()
-                    # Llamamos a la función para enviarlo.
-                    self.enviar_correo_confirmacion(email_cliente, monto, moneda)
-                else:
-                    print("-> ADVERTENCIA: Después de buscar en todos los sitios, no se encontró un correo de cliente.")
+            # ... puedes añadir más 'elif' aquí si descubrimos otras rutas ...
 
-            except Exception as e:
-                print(f"-> ERROR GENERAL PROCESANDO EL EVENTO: {e}")
+            # --- Verificación final y envío ---
+            if email_cliente:
+                print(f"-> CORREO ENCONTRADO: {email_cliente}. Procediendo a enviar.")
+                # Extraemos monto y moneda
+                monto = datos_pago.get('amount', 0) / 100
+                moneda = datos_pago.get('currency', 'usd').upper()
+                # Llamamos a la función para enviarlo.
+                self.enviar_correo_confirmacion(email_cliente, monto, moneda)
+            else:
+                print(
+                    "-> ADVERTENCIA: Después de buscar en todos los sitios conocidos, no se encontró un correo de cliente.")
+
+        except Exception as e:
+            print(f"-> ERROR INESPERADO PROCESANDO EL EVENTO: {e}")
 
         # --- 5. RESPONDER A STRIPE QUE TODO HA IDO BIEN ---
         # Esto es muy importante. Le decimos a Stripe "Recibido, gracias" para que no lo siga reintentando.
