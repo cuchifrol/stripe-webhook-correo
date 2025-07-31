@@ -27,23 +27,35 @@ class handler(BaseHTTPRequestHandler):
             print("-> Evento 'payment_intent.succeeded' detectado. Procediendo a enviar correo.")
 
             try:
-                # Intentamos extraer el email del cliente. La información puede venir en varios campos.
-                # Esta es la ruta típica donde Stripe lo coloca.
-                email_cliente = evento_stripe['data']['object']['receipt_email']
-                # También extraemos el monto y la moneda para personalizar el correo.
-                monto = evento_stripe['data']['object']['amount'] / 100  # Stripe lo envía en céntimos
-                moneda = evento_stripe['data']['object']['currency'].upper()
+                # --- NUEVO CÓDIGO DETECTIVE PARA ENCONTRAR EL EMAIL ---
+                email_cliente = None
+                datos_pago = evento_stripe['data']['object']
 
+                # Intento 1: ¿Está en el campo de recibo explícito?
+                if datos_pago.get('receipt_email'):
+                    email_cliente = datos_pago['receipt_email']
+                    print("-> Correo encontrado en 'receipt_email'.")
+
+                # Intento 2 (El más fiable): ¿Está en los detalles de facturación del cargo?
+                elif datos_pago.get('charges') and datos_pago['charges']['data']:
+                    detalles_facturacion = datos_pago['charges']['data'][0]['billing_details']
+                    if detalles_facturacion and detalles_facturacion.get('email'):
+                        email_cliente = detalles_facturacion['email']
+                        print("-> Correo encontrado en 'billing_details'.")
+
+                # Si después de buscar, hemos encontrado un email...
                 if email_cliente:
-                    print(f"-> Correo del cliente encontrado: {email_cliente}")
-                    # Si encontramos un email, llamamos a nuestra función para enviarlo.
+                    print(f"-> Correo final para el envío: {email_cliente}")
+                    # Extraemos monto y moneda
+                    monto = datos_pago['amount'] / 100
+                    moneda = datos_pago['currency'].upper()
+                    # Llamamos a la función para enviarlo.
                     self.enviar_correo_confirmacion(email_cliente, monto, moneda)
                 else:
-                    print("-> ADVERTENCIA: No se encontró un 'receipt_email' en el evento de Stripe.")
+                    print("-> ADVERTENCIA: Después de buscar en todos los sitios, no se encontró un correo de cliente.")
 
-            except KeyError:
-                print(
-                    "-> ERROR: No se pudo encontrar el email o el monto en los datos del evento. La estructura puede haber cambiado.")
+            except Exception as e:
+                print(f"-> ERROR GENERAL PROCESANDO EL EVENTO: {e}")
 
         # --- 5. RESPONDER A STRIPE QUE TODO HA IDO BIEN ---
         # Esto es muy importante. Le decimos a Stripe "Recibido, gracias" para que no lo siga reintentando.
