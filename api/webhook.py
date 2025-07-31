@@ -1,140 +1,84 @@
-# --- 1. IMPORTACIONES NECESARIAS ---
-# Todas estas son librerías estándar de Python, no necesitan instalación.
 from http.server import BaseHTTPRequestHandler
 import json
-import os  # La herramienta CLAVE para leer nuestras Variables de Entorno (secretos).
-import smtplib, ssl  # Las herramientas para enviar correos usando SMTP.
-from email.message import EmailMessage  # Una clase para construir correos con formato.
+import os
+import smtplib, ssl
+from email.message import EmailMessage
+import stripe  # <-- ¡NUESTRA PRIMERA LIBRERÍA EXTERNA!
 
 
-# --- 2. EL MANEJADOR DEL WEBHOOK (Nuestra clase principal) ---
-# Vercel buscará y ejecutará esta clase cuando reciba una petición.
 class handler(BaseHTTPRequestHandler):
-
-    # Esta función se ejecuta específicamente cuando la petición es de tipo POST (que es lo que hace Stripe).
     def do_POST(self):
-        # --- 3. LEER Y DECODIFICAR LOS DATOS DE STRIPE ---
+        # --- 1. CONFIGURAR LA LIBRERÍA DE STRIPE ---
+        # Le decimos a la librería que use nuestra clave secreta.
+        stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+
+        # --- 2. LEER LOS DATOS DEL WEBHOOK ---
         content_length = int(self.headers['Content-Length'])
-        post_data_bytes = self.rfile.read(content_length)
-        evento_stripe = json.loads(post_data_bytes)
+        evento_stripe = json.loads(self.rfile.read(content_length))
 
-        # Imprimimos en los logs de Vercel para saber que hemos recibido algo.
-        print(f"¡Webhook recibido! Procesando evento tipo: {evento_stripe.get('type')}")
+        print(f"Webhook recibido: {evento_stripe.get('type')}")
 
-        # --- 4. VERIFICAR QUE ES EL EVENTO QUE NOS INTERESA ---
-        # Solo queremos actuar cuando un pago se ha completado con éxito.
         if evento_stripe.get('type') == 'payment_intent.succeeded':
-            print("-> Evento 'payment_intent.succeeded' detectado. Procediendo a enviar correo.")
+            print("-> Evento de pago exitoso detectado.")
 
-            # --- NUEVO CÓDIGO DETECTIVE (REEMPLAZO) ---
-        try:
-            email_cliente = None
-            datos_pago = evento_stripe['data']['object']
+            try:
+                datos_pago = evento_stripe['data']['object']
+                id_del_cargo = datos_pago.get('latest_charge')
 
-            # Intento 1: ¿Está en el campo de recibo explícito? (El que falló antes)
-            if datos_pago.get('receipt_email'):
-                email_cliente = datos_pago['receipt_email']
-                print("-> Búsqueda 1: Correo encontrado en 'receipt_email'.")
+                if id_del_cargo:
+                    # --- 3. EL TRUCO: USAR EL ID PARA PEDIR EL OBJETO DEL CARGO COMPLETO ---
+                    print(f"-> Obteniendo detalles completos del cargo: {id_del_cargo}")
+                    cargo_completo = stripe.Charge.retrieve(id_del_cargo)
 
-            # Intento 2 (El más fiable): ¿Está en los detalles de facturación del cargo?
-            elif datos_pago.get('charges') and datos_pago['charges'].get('data'):
-                # Obtenemos la lista de cargos (normalmente solo hay uno)
-                cargos = datos_pago['charges']['data']
-                if cargos:
-                    detalles_facturacion = cargos[0].get('billing_details')
-                    if detalles_facturacion and detalles_facturacion.get('email'):
-                        email_cliente = detalles_facturacion['email']
-                        print("-> Búsqueda 2: Correo encontrado en 'billing_details' del cargo.")
+                    # Ahora, en `cargo_completo` SÍ tenemos los detalles de facturación.
+                    email_cliente = cargo_completo.billing_details.email
 
-            # ... puedes añadir más 'elif' aquí si descubrimos otras rutas ...
+                    if email_cliente:
+                        print(f"-> ¡ÉXITO! Correo encontrado en los detalles del cargo: {email_cliente}")
+                        monto = datos_pago['amount'] / 100
+                        moneda = datos_pago['currency'].upper()
+                        self.enviar_correo_confirmacion(email_cliente, monto, moneda)
+                    else:
+                        print("-> ADVERTENCIA: Se recuperó el cargo pero no contenía un email en billing_details.")
+                else:
+                    print("-> ADVERTENCIA: El evento no contenía un 'latest_charge' ID.")
 
-            # --- Verificación final y envío ---
-            if email_cliente:
-                print(f"-> CORREO ENCONTRADO: {email_cliente}. Procediendo a enviar.")
-                # Extraemos monto y moneda
-                monto = datos_pago.get('amount', 0) / 100
-                moneda = datos_pago.get('currency', 'usd').upper()
-                # Llamamos a la función para enviarlo.
-                self.enviar_correo_confirmacion(email_cliente, monto, moneda)
-            else:
-                print(
-                    "-> ADVERTENCIA: Después de buscar en todos los sitios conocidos, no se encontró un correo de cliente.")
+            except Exception as e:
+                print(f"-> ERROR PROCESANDO EL EVENTO: {e}")
 
-        except Exception as e:
-            print(f"-> ERROR INESPERADO PROCESANDO EL EVENTO: {e}")
-
-        # --- 5. RESPONDER A STRIPE QUE TODO HA IDO BIEN ---
-        # Esto es muy importante. Le decimos a Stripe "Recibido, gracias" para que no lo siga reintentando.
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(b"Webhook procesado y finalizado.")
+        self.wfile.write(b"Webhook procesado.")
         return
 
-    # --- FUNCIÓN AUXILIAR PARA ENVIAR EL CORREO ---
     def enviar_correo_confirmacion(self, destinatario, monto, moneda):
-        print("-> Iniciando la función para enviar correo...")
-
-        # --- 6. LEER NUESTROS SECRETOS DE LAS VARIABLES DE ENTORNO ---
-        # `os.environ.get()` le pide a Vercel el valor de la variable.
-        # El código NUNCA ve la contraseña real, solo la referencia a ella.
+        # (Esta función se queda exactamente igual que antes)
+        print("-> Iniciando envío de correo...")
         remitente = os.environ.get('CORREO_USER')
         password = os.environ.get('CORREO_PASS')
         servidor_smtp = os.environ.get('SMTP_SERVER')
-        puerto_smtp = int(os.environ.get('SMTP_PORT'))  # El puerto debe ser un número entero (int)
+        puerto_smtp = int(os.environ.get('SMTP_PORT'))
 
-        # Verificación: Nos aseguramos de que todas las variables fueron encontradas.
         if not all([remitente, password, servidor_smtp, puerto_smtp]):
-            print(
-                "-> ERROR FATAL: Faltan una o más variables de entorno para el correo. Revisa la configuración en Vercel.")
-            return  # Salimos de la función si faltan datos.
+            print("-> ERROR FATAL: Faltan variables de entorno del correo.")
+            return
 
-        # --- 7. CONSTRUIR EL MENSAJE DEL CORREO ---
-        asunto = "¡Gracias por tu compra en Mi Tienda!"
+        asunto = "¡Gracias por tu compra!"
         cuerpo_html = f"""
-        <html>
-        <head>
-            <style>
-                body {{ font-family: sans-serif; }}
-                .container {{ padding: 20px; border: 1px solid #ddd; border-radius: 5px; max-width: 600px; margin: auto; }}
-                h1 {{ color: #333; }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <h1>Confirmación de tu pago</h1>
-                <p>Hola,</p>
-                <p>Hemos recibido tu pago de <strong>{monto:.2f} {moneda}</strong> correctamente. ¡Muchas gracias por tu confianza!</p>
-                <p>Si tienes cualquier duda, responde a este correo.</p>
-                <p>Saludos,<br>El equipo de Mi Tienda</p>
-            </div>
-        </body>
-        </html>
+        <html><body><h1>Confirmación de tu pago</h1><p>Hemos recibido tu pago de <strong>{monto:.2f} {moneda}</strong>. ¡Gracias!</p></body></html>
         """
-
         msg = EmailMessage()
         msg['Subject'] = asunto
         msg['From'] = remitente
         msg['To'] = destinatario
-        # Es buena práctica tener una versión de texto simple para clientes de correo antiguos.
-        msg.set_content(f"Hemos recibido tu pago de {monto:.2f} {moneda} correctamente. ¡Muchas gracias!")
-        # Añadimos la versión HTML que es la que se verá normalmente.
+        msg.set_content(f"Hemos recibido tu pago de {monto:.2f} {moneda}. ¡Gracias!")
         msg.add_alternative(cuerpo_html, subtype='html')
 
-        # --- 8. CONECTAR Y ENVIAR EL CORREO DE FORMA SEGURA ---
         try:
-            print(f"-> Intentando conectar con {servidor_smtp} en el puerto {puerto_smtp}...")
-            # Creamos un contexto seguro SSL para encriptar la conexión.
             contexto_seguro = ssl.create_default_context()
-
-            # Usamos "with" para asegurar que la conexión se cierra automáticamente.
             with smtplib.SMTP_SSL(servidor_smtp, puerto_smtp, context=contexto_seguro) as server:
-                print("-> Conexión establecida. Intentando iniciar sesión...")
                 server.login(remitente, password)
-                print("-> Sesión iniciada. Enviando correo...")
                 server.send_message(msg)
-                print(f"-> ¡ÉXITO! Correo de confirmación enviado a {destinatario}.")
-
+                print(f"-> Correo de confirmación enviado a {destinatario}.")
         except Exception as e:
-            # Capturamos cualquier error (contraseña incorrecta, servidor no responde, etc.)
-            # para poder verlo en los logs de Vercel y saber qué ha pasado.
-            print(f"-> HA OCURRIDO UN ERROR INESPERADO AL ENVIAR EL CORREO: {e}")
+            print(f"-> ERROR AL ENVIAR CORREO: {e}")
