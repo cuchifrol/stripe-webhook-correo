@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 
 # Movemos la función de enviar correo fuera para que sea independiente
-def enviar_correo_confirmacion(self, destinatario, monto, moneda, nombre_cliente, direccion_envio, nombre_producto):
+def enviar_correo_confirmacion(destinatario, monto, moneda, nombre_cliente, direccion_envio, nombre_producto):
     print("-> Iniciando envío de correo con plantilla HTML...")
 
     remitente = os.environ.get('CORREO_USER')
