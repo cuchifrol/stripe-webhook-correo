@@ -62,7 +62,8 @@ def enviar_correo_confirmacion(destinatario, monto, moneda, nombre_cliente, dire
     asunto = f"Tu pedido en micosmeticanatural.com ha sido confirmado."
     msg = EmailMessage()
     msg['Subject'] = asunto
-    msg['From'] = remitente
+    nombre_a_mostrar = "María Mayorca"  # <-- CAMBIA ESTO POR TU NOMBRE O EL DE TU NEGOCIO
+    msg['From'] = f"{nombre_a_mostrar} <{remitente}>"
     msg['To'] = destinatario
     msg.set_content(
         "Hemos recibido tu pago correctamente. Este correo se visualiza mejor en un cliente de correo moderno.")
