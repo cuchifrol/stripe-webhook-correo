@@ -59,7 +59,7 @@ def enviar_correo_confirmacion(destinatario, monto, moneda, nombre_cliente, dire
     cuerpo_html = cuerpo_html.replace('{{DIRECCION_ENTREGA}}', direccion_formateada)
     cuerpo_html = cuerpo_html.replace('{{NOMBRE_PRODUCTO}}', nombre_producto)  # <-- ¡AÑADE ESTA LÍNEA!
 
-    asunto = f"Tu pedido en micosmeticanatural.com ha sido confirmado.)"
+    asunto = f"Tu pedido en micosmeticanatural.com ha sido confirmado."
     msg = EmailMessage()
     msg['Subject'] = asunto
     msg['From'] = remitente
