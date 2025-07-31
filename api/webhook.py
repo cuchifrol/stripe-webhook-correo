@@ -43,21 +43,7 @@ class handler(BaseHTTPRequestHandler):
                         direccion_envio = cargo_completo.shipping
 
                         # --- NUEVA LÓGICA MEJORADA PARA OBTENER LOS NOMBRES DE PRODUCTOS ---
-                        try:
-                            # Pedimos a Stripe la lista de productos de este PaymentIntent
-                            line_items = stripe.PaymentIntent.list_line_items(datos_pago['id'], limit=5)
-
-                            # Extraemos los nombres de cada producto
-                            nombres_productos = [item.description for item in line_items.data]
-
-                            # Unimos los nombres con comas si hay más de uno
-                            nombre_producto = ", ".join(nombres_productos) if nombres_productos else "Tu Compra"
-
-                            print(f"-> Nombre(s) de producto(s) encontrado(s): {nombre_producto}")
-                        except Exception as e:
-                            print(
-                                f"-> ADVERTENCIA: No se pudieron obtener los line items. Usando descripción genérica. Error: {e}")
-                            nombre_producto = "Tu Compra"
+                        nombre_producto = cargo_completo.description or "Tu Compra"
 
                         self.enviar_correo_confirmacion(email_cliente, monto, moneda, nombre_cliente, direccion_envio,
                                                         nombre_producto)
@@ -123,7 +109,7 @@ class handler(BaseHTTPRequestHandler):
         cuerpo_html = cuerpo_html.replace('{{DIRECCION_ENTREGA}}', direccion_formateada)
         cuerpo_html = cuerpo_html.replace('{{NOMBRE_PRODUCTO}}', nombre_producto) # <-- ¡AÑADE ESTA LÍNEA!
 
-        asunto = f"Tu pedido en micosmeticanatural.com ha sido confirmado ({monto_formateado})"
+        asunto = f"Tu pedido en micosmeticanatural.com ha sido confirmado.)"
         msg = EmailMessage()
         msg['Subject'] = asunto
         msg['From'] = remitente
