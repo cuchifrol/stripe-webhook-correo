@@ -59,69 +59,69 @@ class handler(BaseHTTPRequestHandler):
         return
 
 
-def enviar_correo_confirmacion(self, destinatario, monto, moneda, nombre_cliente, direccion_envio):
-    print("-> Iniciando envío de correo con plantilla HTML...")
+    def enviar_correo_confirmacion(self, destinatario, monto, moneda, nombre_cliente, direccion_envio):
+        print("-> Iniciando envío de correo con plantilla HTML...")
 
-    # --- Leer secretos de las variables de entorno (igual que antes) ---
-    remitente = os.environ.get('CORREO_USER')
-    password = os.environ.get('CORREO_PASS')
-    servidor_smtp = os.environ.get('SMTP_SERVER')
-    puerto_smtp = int(os.environ.get('SMTP_PORT'))
+        # --- Leer secretos de las variables de entorno (igual que antes) ---
+        remitente = os.environ.get('CORREO_USER')
+        password = os.environ.get('CORREO_PASS')
+        servidor_smtp = os.environ.get('SMTP_SERVER')
+        puerto_smtp = int(os.environ.get('SMTP_PORT'))
 
-    if not all([remitente, password, servidor_smtp, puerto_smtp]):
-        print("-> ERROR FATAL: Faltan variables de entorno del correo.")
-        return
+        if not all([remitente, password, servidor_smtp, puerto_smtp]):
+            print("-> ERROR FATAL: Faltan variables de entorno del correo.")
+            return
 
-    # --- 1. LEER LA PLANTILLA HTML DESDE EL ARCHIVO ---
-    try:
-        # La ruta al archivo es relativa a donde se ejecuta el script.
-        # Vercel coloca los archivos de la raíz en el directorio principal.
-        with open('correo_template.html', 'r', encoding='utf-8') as f:
-            cuerpo_html = f.read()
-    except FileNotFoundError:
-        print("-> ERROR FATAL: No se encontró el archivo 'correo_template.html'.")
-        return
+        # --- 1. LEER LA PLANTILLA HTML DESDE EL ARCHIVO ---
+        try:
+            # La ruta al archivo es relativa a donde se ejecuta el script.
+            # Vercel coloca los archivos de la raíz en el directorio principal.
+            with open('correo_template.html', 'r', encoding='utf-8') as f:
+                cuerpo_html = f.read()
+        except FileNotFoundError:
+            print("-> ERROR FATAL: No se encontró el archivo 'correo_template.html'.")
+            return
 
-    # --- 2. PREPARAR LAS VARIABLES PARA LA PLANTILLA ---
+        # --- 2. PREPARAR LAS VARIABLES PARA LA PLANTILLA ---
 
-    # Formateamos el monto
-    monto_formateado = f"{monto:.2f} {moneda}"
+        # Formateamos el monto
+        monto_formateado = f"{monto:.2f} {moneda}"
 
-    # Formateamos el nombre (lo ponemos en formato Título)
-    nombre_formateado = nombre_cliente.title() if nombre_cliente else "Cliente"
+        # Formateamos el nombre (lo ponemos en formato Título)
+        nombre_formateado = nombre_cliente.title() if nombre_cliente else "Cliente"
 
-    # Formateamos la dirección de envío
-    if direccion_envio and direccion_envio.address:
-        addr = direccion_envio.address
-        direccion_formateada = f"""
-               {addr.line1}<br>
-               {f'{addr.line2}<br>' if addr.line2 else ''}
-               {addr.postal_code} {addr.city}, {addr.state}<br>
-               {addr.country}
-           """.strip()
-    else:
-        direccion_formateada = "No se ha especificado una dirección de envío."
+        # Formateamos la dirección de envío
+        if direccion_envio and direccion_envio.address:
+            addr = direccion_envio.address
+            direccion_formateada = f"""
+                   {addr.line1}<br>
+                   {f'{addr.line2}<br>' if addr.line2 else ''}
+                   {addr.postal_code} {addr.city}, {addr.state}<br>
+                   {addr.country}
+               """.strip()
+        else:
+            direccion_formateada = "No se ha especificado una dirección de envío."
 
-    # --- 3. REEMPLAZAR LOS MARCADORES EN LA PLANTILLA ---
-    cuerpo_html = cuerpo_html.replace('{{NOMBRE_CLIENTE}}', nombre_formateado)
-    cuerpo_html = cuerpo_html.replace('{{MONTO_PAGO}}', monto_formateado)
-    cuerpo_html = cuerpo_html.replace('{{DIRECCION_ENTREGA}}', direccion_formateada)
+        # --- 3. REEMPLAZAR LOS MARCADORES EN LA PLANTILLA ---
+        cuerpo_html = cuerpo_html.replace('{{NOMBRE_CLIENTE}}', nombre_formateado)
+        cuerpo_html = cuerpo_html.replace('{{MONTO_PAGO}}', monto_formateado)
+        cuerpo_html = cuerpo_html.replace('{{DIRECCION_ENTREGA}}', direccion_formateada)
 
-    # --- 4. CONSTRUIR Y ENVIAR EL CORREO (igual que antes, pero con el nuevo cuerpo) ---
-    asunto = f"Tu pedido en Mi Tienda ha sido confirmado ({monto_formateado})"
-    msg = EmailMessage()
-    msg['Subject'] = asunto
-    msg['From'] = remitente
-    msg['To'] = destinatario
-    msg.set_content(
-        "Hemos recibido tu pago correctamente. Este correo se visualiza mejor en un cliente de correo moderno.")
-    msg.add_alternative(cuerpo_html, subtype='html')
+        # --- 4. CONSTRUIR Y ENVIAR EL CORREO (igual que antes, pero con el nuevo cuerpo) ---
+        asunto = f"Tu pedido en Mi Tienda ha sido confirmado ({monto_formateado})"
+        msg = EmailMessage()
+        msg['Subject'] = asunto
+        msg['From'] = remitente
+        msg['To'] = destinatario
+        msg.set_content(
+            "Hemos recibido tu pago correctamente. Este correo se visualiza mejor en un cliente de correo moderno.")
+        msg.add_alternative(cuerpo_html, subtype='html')
 
-    try:
-        contexto_seguro = ssl.create_default_context()
-        with smtplib.SMTP_SSL(servidor_smtp, puerto_smtp, context=contexto_seguro) as server:
-            server.login(remitente, password)
-            server.send_message(msg)
-            print(f"-> Correo con plantilla enviado exitosamente a {destinatario}.")
-    except Exception as e:
-        print(f"-> ERROR AL ENVIAR CORREO CON PLANTILLA: {e}")
+        try:
+            contexto_seguro = ssl.create_default_context()
+            with smtplib.SMTP_SSL(servidor_smtp, puerto_smtp, context=contexto_seguro) as server:
+                server.login(remitente, password)
+                server.send_message(msg)
+                print(f"-> Correo con plantilla enviado exitosamente a {destinatario}.")
+        except Exception as e:
+            print(f"-> ERROR AL ENVIAR CORREO CON PLANTILLA: {e}")
