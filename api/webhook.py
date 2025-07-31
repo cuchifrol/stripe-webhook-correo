@@ -14,7 +14,7 @@ class handler(BaseHTTPRequestHandler):
 
         # 2. Nuestro "Hola Mundo": Imprimimos un mensaje y los datos en los logs del servidor.
         #    Esto nos permitirá verificar que la conexión funciona.
-        print("¡Hola Mundo! Se ha recibido una llamada desde el Webhook de Stripe.")
+        print("¡Hola Planeta! Se ha recibido una llamada desde el Webhook de Stripe.")
         print("-------------------- INICIO DE DATOS --------------------")
         try:
             # Intentamos formatear los datos como un diccionario para que se lean mejor
