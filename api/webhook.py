@@ -89,7 +89,7 @@ def stripe_webhook():
     endpoint_secret = os.environ.get('STRIPE_WEBHOOK_SECRET')
     payload = request.data
     sig_header = request.headers.get('Stripe-Signature')
-
+#coment to test
     # --- 2. VERIFICACIÓN DE LA FIRMA (Máxima Seguridad) ---
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
