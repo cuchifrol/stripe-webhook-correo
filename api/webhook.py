@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 
 # Movemos la función de enviar correo fuera para que sea independiente
-def enviar_correo_confirmacion(destinatario, monto, moneda, nombre_cliente, direccion_envio, nombre_producto):
+def enviar_correo_confirmacion(destinatario, monto, moneda, nombre_cliente, direccion_envio, nombre_producto,ser):
     print("-> Iniciando envío de correo con plantilla HTML...")
 
     remitente = os.environ.get('CORREO_USER')
@@ -31,7 +31,13 @@ def enviar_correo_confirmacion(destinatario, monto, moneda, nombre_cliente, dire
         # 2. Subimos un nivel para llegar a la raíz del proyecto
         base_dir = script_dir.parent
         # 3. Unimos la ruta raíz con el nombre del archivo de la plantilla
-        template_path = base_dir / 'correo_template.html'
+        
+
+        if ser == 1:
+            template_path = base_dir / 'correo_template.html'
+        else:
+            template_path = base_dir / 'correo_template_simple.html'
+
 
         print(f"-> Intentando leer la plantilla desde la ruta: {template_path}")
 
@@ -125,11 +131,18 @@ def stripe_webhook():
             nombres_productos = [item.description for item in line_items.data]
             nombre_producto = ", ".join(nombres_productos) if nombres_productos else "Tu Compra"
 
+            # Verificamos si el producto contiene la palabra "Antioxidante"
+            ser=0
+            if "Antioxidante" in nombre_producto:
+                ser = 1
+            else:
+                ser = 0
+
             print(f"-> Sesión procesada. Producto: {nombre_producto}, Cliente: {email_cliente}")
 
             # Llamamos a nuestra función de envío de correo
             # (Hay que definirla fuera o dentro de esta función)
-            enviar_correo_confirmacion(email_cliente, monto, moneda, nombre_cliente, direccion_envio, nombre_producto)
+            enviar_correo_confirmacion(email_cliente, monto, moneda, nombre_cliente, direccion_envio, nombre_producto,ser)
             #enviar_correo_confirmacion(os.environ.get('CORREO_USER'), monto, moneda, nombre_cliente, direccion_envio, nombre_producto)
         except Exception as e:
             print(f"-> ERROR al procesar la sesión de checkout: {e}")
