@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f7;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .header {
+            background-color: #000000; /* Un color morado como el de Stripe */
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+        }
+        .headervideo {
+            background-color: #f5f2f0; /* Un color morado como el de Stripe */
+            color: #000000;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 30px;
+            line-height: 1.6;
+        }
+        .content p {
+            margin: 0 0 15px 0;
+        }
+        .details {
+            background-color: #ffffff;
+            padding: 20px;
+            border-top: 1px solid #ad9d95;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .details h3 {
+            margin-top: 0;
+            color: #ad9d95;
+        }
+        .footer {
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #ad9d95;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>¡Gracias por tu compra!</h1>
+        </div>
+        <div class="content">
+            <p>Hola <strong>{{NOMBRE_CLIENTE}}</strong>,</p>
+            <p>Te confirmamos que hemos recibido tu pago correctamente. A continuación, te dejo los detalles de tu pedido.</p>
+        </div>
+        <div class="details">
+            <h3>Resumen del Pedido</h3>
+            <p><strong>Producto:</strong> {{NOMBRE_PRODUCTO}}</p>
+            <p><strong>Importe total:</strong> {{MONTO_PAGO}}</p>
+            <p><strong>Dirección de entrega:</strong><br>{{DIRECCION_ENTREGA}}</p>
+        </div>
+
+        <div class="content">
+            <p>Si tienes cualquier pregunta sobre tu pedido, no dudes en responder a este correo.</p>
+            <p>¡Gracias de nuevo por tu confianza!</p>
+            <p>María Mayorca</p>          
+
+        </div>
+        <div class="footer">
+            <p>www.micosmeticanatural.com.</p>
+        </div>
+    </div>
+</body>
+</html>
