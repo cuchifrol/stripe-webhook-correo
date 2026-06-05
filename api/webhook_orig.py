@@ -133,15 +133,8 @@ def stripe_webhook():
 
             # Verificamos si el producto contiene la palabra "Antioxidante"
             ser=0
-            # 1. Comprobación para "Antioxidante"
             if "Antioxidante" in nombre_producto:
                 ser = 1
-                
-            # 2. Comprobación para "Barrera" (soporta minúsculas, mayúsculas y tildes)
-            elif "Barrera" in nombre_producto.upper() or "barrera" in nombre_producto.upper():
-                ser = 3
-                
-            # 3. Opción por defecto si no coincide con ninguno
             else:
                 ser = 0
 
