@@ -11,7 +11,7 @@ from pathlib import Path
 app = Flask(__name__)
 
 # 1. Importas únicamente la función encargada del registro
-from mbp_user_manager import registrar_cliente_con_password
+from api.mbp_user_manager import registrar_cliente_con_password
 
 # Movemos la función de enviar correo fuera para que sea independiente
 def enviar_correo_confirmacion(destinatario, monto, moneda, nombre_cliente, direccion_envio, nombre_producto,ser):
