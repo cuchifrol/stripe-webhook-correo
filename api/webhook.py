@@ -150,14 +150,14 @@ def stripe_webhook():
                 ser = 1
                 
             # 2. Comprobación para "Barrera" (soporta minúsculas, mayúsculas y tildes)
-            elif "Barrera" in nombre_producto.upper() or "barrera" in nombre_producto.upper():
+            elif "Barrera" in nombre_producto or "barrera" in nombre_producto:
                 ser = 2
                 
             # 3. Opción por defecto si no coincide con ninguno
             else:
                 ser = 0
 
-            print(f"-> Sesión procesada. Producto: {nombre_producto}, Cliente: {email_cliente}")
+            print(f"-> Sesión procesada. Producto: {nombre_producto}, Cliente: {email_cliente}, ser:{str(ser)} ")
 
             # Llamamos a nuestra función de envío de correo
             # (Hay que definirla fuera o dentro de esta función)
