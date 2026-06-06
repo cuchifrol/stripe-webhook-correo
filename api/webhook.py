@@ -151,7 +151,7 @@ def stripe_webhook():
                 
             # 2. Comprobación para "Barrera" (soporta minúsculas, mayúsculas y tildes)
             elif "Barrera" in nombre_producto.upper() or "barrera" in nombre_producto.upper():
-                ser = 3
+                ser = 2
                 
             # 3. Opción por defecto si no coincide con ninguno
             else:
