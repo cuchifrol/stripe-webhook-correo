@@ -1,3 +1,4 @@
-stripe
+stripe<15.0.0
 flask
 redis
+python-dotenv
