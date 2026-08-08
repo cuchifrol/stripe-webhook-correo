@@ -10,6 +10,7 @@ from pathlib import Path
 # Creamos la aplicación Flask
 app = Flask(__name__)
 
+print("STRIPE VERSION:", stripe.VERSION)
 # 1. Importas únicamente la función encargada del registro
 from api.mbp_user_manager import registrar_cliente_con_password
 
