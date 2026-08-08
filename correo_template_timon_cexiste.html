@@ -117,16 +117,14 @@
         
         <div class="content">
             <p>Hola <strong>{{NOMBRE_CLIENTE}}</strong>,</p>
-            <p>Te confirmamos que hemos recibido tu pago correctamente. El Reto Comienza el 1 de Septiembre 2026. El material estará disponible en la plataforma a partir de ese día.</p>
+            <p>Te confirmamos que hemos recibido tu pago correctamente. <br><br><strong>IMPORTANTE: El Reto comienza el 1 de Septiembre 2026. <br></strong> El material estará disponible en la plataforma a partir de ese día.</p>
             
             <!-- Bloque de credenciales generadas -->
             <div class="credentials-box">
                 <h4>Tus Datos de Acceso</h4>
-                <p class="credential-item"><strong>Correo:</strong> {{CORREO_ACCESO}}</p>
-                <p class="credential-item"><strong>Contraseña:</strong> {{PASSWORD_PLANA}}</p>
-            </div>
+                <p>Entra con tus datos del portal digital que ya tenías.</p>
 
-            <p>Para ingresar al RETO, puedrás usar tu usuario y constraseña en este correo:</p>
+            </div>
             
             <!-- Botón de acceso directo -->
             <div class="btn-container">
@@ -137,8 +135,8 @@
         <!-- Detalles de la transacción comercial -->
         <div class="details">
             <h3>Detalles del Pedido</h3>
-            <p><strong>Entra con tus datos del portal que ya tenías</p>
-
+            <p><strong>Producto:</strong> {{NOMBRE_PRODUCTO}}</p>
+            <p><strong>Importe total:</strong> {{MONTO_PAGO}}</p>
         </div>
 
         <div class="content">
