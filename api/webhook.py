@@ -38,21 +38,30 @@ def enviar_correo_confirmacion(destinatario, monto, moneda, nombre_cliente, dire
 
         if ser == 1:
             template_path = base_dir / 'correo_template.html'
-        elif ser ==2: # METODO BARRERA PRIMERO
-            template_path = base_dir / 'correo_template_metodo.html'           
-             # ... (Aquí va tu lógica de comprobar si es "METODO" y asignar "MBP_L1" o "MBP_L2") ...
+
+        elif ser ==2: # METODO BARRERA PRIMERO                       
             curso_comprado = "MBP"     
-            # 2. Llamada directa a tu función externa
-            password_plana = registrar_cliente_con_password(destinatario, curso_comprado)
-        elif ser ==3: #RETO TIMON 21 DIAS
-            template_path = base_dir / 'correo_template_timon.html'           
+            password_plana, portal_existe = registrar_cliente_con_password(destinatario, curso_comprado)    
+            if portal_existe==0:
+                template_path = base_dir / 'correo_template_metodo.html'
+            else:
+                template_path = base_dir / 'correo_template_metodo_cexiste.html'         
              # ... (Aquí va tu lógica de comprobar si es "METODO" y asignar "MBP_L1" o "MBP_L2") ...
+            
+            
+
+        elif ser ==3: #RETO TIMON 21 DIAS                 
             curso_comprado = "TIMON"     
-            # 2. Llamada directa a tu función externa
-            password_plana = registrar_cliente_con_password(destinatario, curso_comprado)
+            password_plana, portal_existe = registrar_cliente_con_password(destinatario, curso_comprado)
+            if portal_existe==0:
+                template_path = base_dir / 'correo_template_timon.html'
+            else:
+                template_path = base_dir / 'correo_template_timon_cexiste.html'                             
+         
         
         else:
             template_path = base_dir / 'correo_template_simple.html'
+
 
 
         print(f"-> Intentando leer la plantilla desde la ruta: {template_path}")
@@ -81,7 +90,7 @@ def enviar_correo_confirmacion(destinatario, monto, moneda, nombre_cliente, dire
     cuerpo_html = cuerpo_html.replace('{{DIRECCION_ENTREGA}}', direccion_formateada)
     cuerpo_html = cuerpo_html.replace('{{NOMBRE_PRODUCTO}}', nombre_producto)  # <-- ¡AÑADE ESTA LÍNEA!
 
-    if ser==2 or ser==3:
+    if (ser==2 or ser==3) and portal_existe==0:
         cuerpo_html = cuerpo_html.replace('{{CORREO_ACCESO}}', destinatario)
         cuerpo_html = cuerpo_html.replace('{{PASSWORD_PLANA}}', password_plana)        
 

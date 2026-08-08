@@ -10,6 +10,9 @@ from pathlib import Path
 # Creamos la aplicación Flask
 app = Flask(__name__)
 
+print("STRIPE VERSION:", stripe.VERSION)
+# 1. Importas únicamente la función encargada del registro
+from api.mbp_user_manager import registrar_cliente_con_password
 
 # Movemos la función de enviar correo fuera para que sea independiente
 def enviar_correo_confirmacion(destinatario, monto, moneda, nombre_cliente, direccion_envio, nombre_producto,ser):
@@ -35,6 +38,19 @@ def enviar_correo_confirmacion(destinatario, monto, moneda, nombre_cliente, dire
 
         if ser == 1:
             template_path = base_dir / 'correo_template.html'
+        elif ser ==2: # METODO BARRERA PRIMERO
+            template_path = base_dir / 'correo_template_metodo.html'           
+             # ... (Aquí va tu lógica de comprobar si es "METODO" y asignar "MBP_L1" o "MBP_L2") ...
+            curso_comprado = "MBP"     
+            # 2. Llamada directa a tu función externa
+            password_plana = registrar_cliente_con_password(destinatario, curso_comprado)
+        elif ser ==3: #RETO TIMON 21 DIAS
+            template_path = base_dir / 'correo_template_timon.html'           
+             # ... (Aquí va tu lógica de comprobar si es "METODO" y asignar "MBP_L1" o "MBP_L2") ...
+            curso_comprado = "TIMON"     
+            # 2. Llamada directa a tu función externa
+            password_plana = registrar_cliente_con_password(destinatario, curso_comprado)
+        
         else:
             template_path = base_dir / 'correo_template_simple.html'
 
@@ -64,6 +80,10 @@ def enviar_correo_confirmacion(destinatario, monto, moneda, nombre_cliente, dire
     cuerpo_html = cuerpo_html.replace('{{MONTO_PAGO}}', monto_formateado)
     cuerpo_html = cuerpo_html.replace('{{DIRECCION_ENTREGA}}', direccion_formateada)
     cuerpo_html = cuerpo_html.replace('{{NOMBRE_PRODUCTO}}', nombre_producto)  # <-- ¡AÑADE ESTA LÍNEA!
+
+    if ser==2 or ser==3:
+        cuerpo_html = cuerpo_html.replace('{{CORREO_ACCESO}}', destinatario)
+        cuerpo_html = cuerpo_html.replace('{{PASSWORD_PLANA}}', password_plana)        
 
     asunto = f"Tu pedido en micosmeticanatural.com ha sido confirmado."
     msg = EmailMessage()
@@ -133,8 +153,19 @@ def stripe_webhook():
 
             # Verificamos si el producto contiene la palabra "Antioxidante"
             ser=0
+            # 1. Comprobación para "Antioxidante"
             if "Antioxidante" in nombre_producto:
                 ser = 1
+                
+            # 2. Comprobación para "Barrera" (soporta minúsculas, mayúsculas y tildes)
+            elif "Barrera" in nombre_producto.upper() or "barrera" in nombre_producto.upper():
+                ser = 2
+
+            # 2. Comprobación para "Barrera" (soporta minúsculas, mayúsculas y tildes)
+            elif "TIMÓN" in nombre_producto.upper() or "TIMON" in nombre_producto.upper():
+                ser = 3
+                
+            # 3. Opción por defecto si no coincide con ninguno
             else:
                 ser = 0
 
