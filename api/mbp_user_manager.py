@@ -73,7 +73,7 @@ def registrar_cliente_con_password(email: str, curso: str) -> str:
             # IMPORTANTE:
             # No generamos una nueva contraseña.
             # Devolvemos None porque el usuario ya tiene contraseña.
-            return None
+            return None,1
 
         # ---------------------------------------------------------
         # 2. SI NO EXISTE, CREAR CLIENTE NUEVO
@@ -114,4 +114,4 @@ def registrar_cliente_con_password(email: str, curso: str) -> str:
     except Exception as e:
         print(f"Error al escribir el cliente en Redis: {e}")
         #portal cliente=1 pues ya existía
-        return None, 1
+        return None, 0
