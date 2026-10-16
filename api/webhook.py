@@ -51,7 +51,7 @@ def enviar_correo_confirmacion(destinatario, monto, moneda, nombre_cliente, dire
             
 
         elif ser ==3: #RETO TIMON 21 DIAS                 
-            curso_comprado = "TIMON"     
+            curso_comprado = "TIMON2"     
             password_plana, portal_existe = registrar_cliente_con_password(destinatario, curso_comprado)
             if portal_existe==0:
                 template_path = base_dir / 'correo_template_timon.html'
