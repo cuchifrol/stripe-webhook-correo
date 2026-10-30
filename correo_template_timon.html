@@ -77,7 +77,17 @@
             font-size: 16px;
             transition: background-color 0.2s ease;
         }
-        
+        .btn-whatsapp {
+            display: inline-block;
+            background-color: #7da87f; /* whatsapp */
+            color: #f6efe4 !important; /* Texto crema */
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 12px;
+            transition: background-color 0.2s ease;
+        }
         .details {
             background-color: #faf8f5;
             padding: 24px 30px;
@@ -112,26 +122,31 @@
     <div class="container">
         <!-- Encabezado corporativo -->
         <div class="header">
-            <h1>RETO TIMÓN 21 DÍAS</h1>
+            <h1>RETO TIMÓN</h1>
         </div>
         
         <div class="content">
             <p>Hola <strong>{{NOMBRE_CLIENTE}}</strong>,</p>
-               <p>Te confirmamos que hemos recibido tu pago correctamente. <br><br><strong>IMPORTANTE: El Reto comienza el 26 de Octubre 2026. <br></strong> Por ahora puedes entrar a la plataforma, ver la estructura del reto y comenzar a recolectar los materiales que vas a necesitar.</p>
-                <p>Cuando comience el reto verás todas las clases, fórmulas, material de apoyo dentro de la plataforma.</p>     
-                <p>Te iré informando también por correo cada etapa del reto.</p>     
-            <!-- Bloque de credenciales generadas -->
+                <p>Te confirmamos que hemos recibido tu pago correctamente. <br><br><strong>IMPORTANTE: Ya tienes acceso a todo el material del RETO. <br></strong> Entra a la plataforma, ve el vídeo de Bienvenida donde te explicaré toda la estructura del reto.</p>
+                <p>Toda la información que necesitas está en la Plataforma Digital.</p>     
+                <p>Te iré informando también por este correo cuándo serán las clases en VIVO.</p> 
+
             <div class="credentials-box">
                 <h4>Tus Datos de Acceso</h4>
                 <p class="credential-item"><strong>Correo:</strong> {{CORREO_ACCESO}}</p>
                 <p class="credential-item"><strong>Contraseña:</strong> {{PASSWORD_PLANA}}</p>
+               <!-- Botón de acceso directo -->
+                <div class="btn-container">
+                    <a href="https://www.micosmeticanatural.com/mbp_pack" class="btn-access" target="_blank">Acceder a la Plataforma</a>
+                </div>
             </div>
-  
-           
+            
             <!-- Botón de acceso directo -->
             <div class="btn-container">
-                <a href="https://www.micosmeticanatural.com/mbp_pack" class="btn-access" target="_blank">Acceder a la Plataforma</a>
+                <P>Apúntate a la comunidad de Whatsapp de TIMÓN para recibir recordatorios de los seguimientos en VIVO</p>
+                <a href="https://chat.whatsapp.com/BYEfoOahhCLCAIuHBvmfeU" class="btn-whatsapp" target="_blank">Grupo TIMÓN Whatsapp</a>
             </div>
+
         </div>
 
         <!-- Detalles de la transacción comercial -->
