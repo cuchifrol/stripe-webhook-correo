@@ -182,7 +182,7 @@ def stripe_webhook():
                 ser = 3
 
             # 4. Comprobación para "MP_MANCHAS_SECA" (soporta minúsculas, mayúsculas y tildes)
-            elif "Regaliz" in nombre_producto.upper():
+            elif "REGALIZ" in nombre_producto.upper():
                 ser = 4
 
             # 3. Opción por defecto si no coincide con ninguno
