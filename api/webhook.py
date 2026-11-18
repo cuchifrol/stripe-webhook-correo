@@ -58,7 +58,14 @@ def enviar_correo_confirmacion(destinatario, monto, moneda, nombre_cliente, dire
             else:
                 template_path = base_dir / 'correo_template_timon_cexiste.html'                             
          
-        
+        elif ser ==4: #MP MANCHAS               
+            curso_comprado = "MP_MANCHAS_SECA"     
+            password_plana, portal_existe = registrar_cliente_con_password(destinatario, curso_comprado)
+            if portal_existe==0:
+                template_path = base_dir / 'correo_template_MP_MANCHAS_SECA.html'
+            else:
+                template_path = base_dir / 'correo_template_MP_MANCHAS_SECA_cexiste.html'                             
+         
         else:
             template_path = base_dir / 'correo_template_simple.html'
 
@@ -170,10 +177,14 @@ def stripe_webhook():
             elif "Barrera" in nombre_producto.upper() or "barrera" in nombre_producto.upper():
                 ser = 2
 
-            # 2. Comprobación para "Barrera" (soporta minúsculas, mayúsculas y tildes)
+            # 3. Comprobación para "TIMÓN" (soporta minúsculas, mayúsculas y tildes)
             elif "TIMÓN" in nombre_producto.upper() or "TIMON" in nombre_producto.upper():
                 ser = 3
-                
+
+            # 4. Comprobación para "MP_MANCHAS_SECA" (soporta minúsculas, mayúsculas y tildes)
+            elif "Fórmula Crema" in nombre_producto.upper():
+                ser = 4
+
             # 3. Opción por defecto si no coincide con ninguno
             else:
                 ser = 0
