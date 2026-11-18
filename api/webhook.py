@@ -97,7 +97,7 @@ def enviar_correo_confirmacion(destinatario, monto, moneda, nombre_cliente, dire
     cuerpo_html = cuerpo_html.replace('{{DIRECCION_ENTREGA}}', direccion_formateada)
     cuerpo_html = cuerpo_html.replace('{{NOMBRE_PRODUCTO}}', nombre_producto)  # <-- ¡AÑADE ESTA LÍNEA!
 
-    if (ser==2 or ser==3) and portal_existe==0:
+    if (ser==2 or ser==3 or ser==4) and portal_existe==0:
         cuerpo_html = cuerpo_html.replace('{{CORREO_ACCESO}}', destinatario)
         cuerpo_html = cuerpo_html.replace('{{PASSWORD_PLANA}}', password_plana)        
 
@@ -182,7 +182,7 @@ def stripe_webhook():
                 ser = 3
 
             # 4. Comprobación para "MP_MANCHAS_SECA" (soporta minúsculas, mayúsculas y tildes)
-            elif "Fórmula Crema" in nombre_producto.upper():
+            elif "Regaliz" in nombre_producto.upper():
                 ser = 4
 
             # 3. Opción por defecto si no coincide con ninguno
