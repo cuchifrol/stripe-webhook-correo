@@ -62,9 +62,9 @@ def enviar_correo_confirmacion(destinatario, monto, moneda, nombre_cliente, dire
             curso_comprado = "MP_MANCHAS_SECA"     
             password_plana, portal_existe = registrar_cliente_con_password(destinatario, curso_comprado)
             if portal_existe==0:
-                template_path = base_dir / 'correo_template_MP_MANCHAS_SECA.html'
+                template_path = base_dir / 'correo_template_mp.html'
             else:
-                template_path = base_dir / 'correo_template_MP_MANCHAS_SECA_cexiste.html'                             
+                template_path = base_dir / 'correo_template_mp_cexiste.html'                             
          
         else:
             template_path = base_dir / 'correo_template_simple.html'
